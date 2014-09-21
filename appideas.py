@@ -12,13 +12,16 @@ from twitter import Twitter, OAuth, TwitterHTTPError
 import twitterapidetails as tad
 import sqlite3
 
+# db should contain:
+# tweet id, tweet profile name, tweet prof image link, tweet content, tweet date
+
 
 db = sqlite3.connect('tweetdata')
 cursor = db.cursor()
-cursor.execute('''
-    CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT,
-                       phone TEXT, email TEXT unique, password TEXT)''')
-                       
+#cursor.execute('''CREATE TABLE tweets(id TEXT, profname TEXT, screenname TEXT, profimagelink TEXT, tweetcontent TEXT, tweetdate TEXT)''')
+
+
+
 db.commit()
 
 
@@ -48,14 +51,29 @@ for status in results['statuses']:
         tweet_content = status['text']
         tweet_prof_image = status['user']['profile_image_url']
         tweet_prof_name = status['user']['screen_name']
+        tweet_actual_name = status['user']['name']
         tweet_create_time = status['created_at']
-        print tweet_content
+        #print tweet_content
+        cursor.execute('''INSERT INTO tweets(id, profname, screenname, profimagelink, tweetcontent, tweetdate) 
+            VALUES (?,?,?,?,?,?)''', (tweet_id, tweet_prof_name, tweet_actual_name, tweet_prof_image, tweet_content, tweet_create_time))
     # add to db
     # db should contain:
     # tweet id, tweet profile name, tweet prof image link, tweet content, tweet
-    
+db.commit()    
 
-
+for status in ai.results['statuses']:
+    # get rid of RTs
+    if "RT" not in status['text']:
+        tweet_id = status['id']
+        tweet_content = status['text']
+        tweet_prof_image = status['user']['profile_image_url']
+        tweet_prof_name = status['user']['screen_name']
+        tweet_actual_name = status['user']['name']
+        tweet_create_time = status['created_at']
+        # check to see if in tweet_id in database, if not then put in
+        cursor.execute('''INSERT INTO tweets(id, profname, screenname, profimagelink, tweetcontent, tweetdate) 
+            VALUES (?,?,?,?,?,?)''', (tweet_id, tweet_prof_name, tweet_actual_name, tweet_prof_image, tweet_content, tweet_create_time))
+  
 
 
 
